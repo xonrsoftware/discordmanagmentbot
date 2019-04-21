@@ -1,0 +1,16 @@
+{
+  "name": "discordmanagmentemojisbot",
+  "version": "0.5.0",
+  "description": "Discord bot for server emojis management.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "AVX (avx@xonr.ru) © 2019",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "git+https://github.com/discordjs/discord.js.git#master",
+    "md5-file": "^4.0.0",
+    "sharp": "^0.22.0"
+  }
+}

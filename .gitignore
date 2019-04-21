@@ -1,0 +1,15 @@
+# Not packages
+node_modules/
+yarn.lock
+package-lock.json
+
+# Not bot configuration
+/config.json
+
+# Not example data
+/data/servers/*
+!/data/servers/000000000000000000
+
+# Not miscellaneous
+.tmp/
+.vscode/
