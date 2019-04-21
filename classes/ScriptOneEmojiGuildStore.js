@@ -61,10 +61,11 @@ class ScriptOneEmojiGuildStore {
     /**
      * Генерация форматинного Embed для отправки.
      *
+     * @param {*} emojid Референс эмодзи.
      * @returns MessageEmbed https://discord.js.org/#/docs/main/master/class/MessageEmbed.
      * @memberof ScriptOneEmojiGuildStore
      */
-    async createformatedembed() {
+    async createformatedembed(emojid) {
         return new Discord.MessageEmbed()
             .setTitle(this.Settings.Embed.Title)
             .setDescription(this.Settings.Embed.Description)
@@ -132,7 +133,7 @@ class ScriptOneEmojiGuildStore {
                 }
             });
 
-        const Embed = await this.createformatedembed();
+        const Embed = await this.createformatedembed(emojid);
 
         //Устанавливаем время, если оно не установлено.
         if (Util.isBlank(this.Settings.Embed.TimeStamp)) {
