@@ -18,7 +18,7 @@ class Command extends CommandBaseClass {
     }
 
     async execute(...args) {
-        console.log("serverslist");
+        console.log("messagesupdate");
     }
     
 }
