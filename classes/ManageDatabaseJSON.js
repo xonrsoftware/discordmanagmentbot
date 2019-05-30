@@ -1,6 +1,6 @@
 "use strict";
 
-const util = require('./Util.js');
+const StaticUtil = require('./StaticUtil.js');
 const fs = require('fs');
 const path = require('path');
 
@@ -12,6 +12,7 @@ const path = require('path');
 class ManageDatabaseJSON {
 
     constructor(filepathstring) {
+        this.StaticUtil = new StaticUtil();
         this.fullfilepath = path.resolve(filepathstring);
         this.fileext = path.extname(this.fullfilepath);
         this.filebasename = path.basename(this.fullfilepath, this.fileext);
@@ -29,12 +30,12 @@ class ManageDatabaseJSON {
      */
     tempfilecheck(skipjsoncheck) {
         if (fs.existsSync(this.tempfilepath)) {
-            if (skipjsoncheck || util.isJSON(fs.readFileSync(this.tempfilepath, 'utf8')) !== undefined) {
+            if (skipjsoncheck || this.StaticUtil.util.isJSON(fs.readFileSync(this.tempfilepath, 'utf8')) !== undefined) {
                 fs.renameSync(this.tempfilepath, this.fullfilepath);
-                return 1;
+                return true;
             } else fs.unlinkSync(this.tempfilepath);
         }
-        return 0;
+        return false;
     }
 
     /**
@@ -48,7 +49,7 @@ class ManageDatabaseJSON {
             let skipcheck = this.tempfilecheck();
             let filedata = fs.readFileSync(this.fullfilepath, 'utf8');
             if (!skipcheck) {
-                filedata = util.isJSON(filedata);
+                filedata = this.StaticUtil.isJSON(filedata);
             } else filedata = JSON.parse(filedata);
             if (filedata !== undefined) {
                 this.data = filedata;

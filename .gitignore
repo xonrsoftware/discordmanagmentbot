@@ -10,6 +10,11 @@ package-lock.json
 /data/servers/*
 !/data/servers/000000000000000000
 
+# Not custom data
+/classes/CustomClasses/
+/classes/Commands/CustomCommands/
+
 # Not miscellaneous
+.jshintrc
 .tmp/
 .vscode/

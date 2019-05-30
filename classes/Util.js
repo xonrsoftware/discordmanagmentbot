@@ -1,83 +1,25 @@
 "use strict";
 
-/**
- * Используется через await для ожидания указанного времени.
- *
- * @param {*} millis миллисекунды
- * @returns обещание
- */
-function sleep(millis) {
-    return new Promise(resolve => setTimeout(resolve, millis));
-}
+class Util {
 
-/**
- * Проверка, что переменная не равна null или undefined и длина больше нуля.
- *
- * @param {*} str
- * @returns
- */
-function isEmpty(str) {
-    return (!str || 0 === str.length);
-}
-
-/**
- * Проверка, что переменная не равна null или undefined и содержимое не пустое.
- *
- * @param {*} str
- * @returns
- */
-function isBlank(str) {
-    return (!str || /^\s*$/.test(str));
-}
-
-/**
- * Отчистить текстовый канал от сообщений, игнорирует ошибку 10008 (неизвестное сообщение, может возникнуть, если сообщение было удалено до фактического исполнения нашего удаления, (Unknown message) https://discordapp.com/developers/docs/topics/opcodes-and-status-codes#json-json-error-codes).
- *
- * @param {*} channel референс канала из Discord.js.
- * @param {*} compare функция сравнения, в первый аргумент передаётся референс сообщения Discord.js. Да - оставить, нет - удалить.
- */
-async function CleanUpTextChannel(channel, compare) {
-    let lastid = null;
-    while (true) {
-        const messages = await channel.messages.fetch({
-            limit: 100,
-            ...(lastid !== null && {
-                before: lastid
-            })
-        });
-        if (messages.size > 0) {
-            lastid = messages.last().id;
-            await Promise.all(messages.filter(x => !compare(x)).map(x => x.delete())).catch(function (reason) {
-                if (reason.code != 10008) {
-                    console.log("DeletionError:" + reason);
-                    process.exit(1);
-                }
-            });
-        } else {
-            break;
-        }
+    constructor(MainApp) {
+        this.MainApp = MainApp;
     }
-}
-
-/**
- * Является ли строка JSON структурой.
- *
- * @param {*} something строка для проверки.
- * @returns В случае успеха возвращает JSON структуру, иначе вернёт undefined.
- */
-function isJSON(something) {
-    if (typeof something != 'string')
-        something = JSON.stringify(something);
-    try {
-        return JSON.parse(something);
-    } catch (e) {
-        return undefined;
+    /**
+     * Используется через await для ожидания указанного времени.
+     *
+     * @param {*} millis миллисекунды
+     * @returns обещание
+     */
+    sleep(millis) {
+        return new Promise(resolve => setTimeout(resolve, millis));
     }
+
+    ResolveServerID(MainApp, serverid) {
+        const server = serverid.length >= 18 ? this.MainApp.GuildStore.find(guild => guild.guildid == serverid) : this.MainApp.GuildStore[serverid];
+        if (server === undefined) throw new Error(`Сервер ${serverid} не был найден, проверьте, что папка существует.`);
+        else return server;
+    }
+    
 }
-module.exports = {
-    sleep: sleep,
-    isEmpty: isEmpty,
-    isBlank: isBlank,
-    isJSON: isJSON,
-    CleanUpTextChannel: CleanUpTextChannel
-};
+module.exports = Util;

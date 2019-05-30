@@ -3,26 +3,27 @@
 const fs = require('fs');
 const path = require('path');
 
-const ScriptOneEmojiGuildStore = require('./ScriptOneEmojiGuildStore.js');
-const ManageDatabaseJSON = require('./ManageDatabaseJSON.js');
-const Util = require('./Util.js');
+const CommandBaseClass = require('../CommandBaseClass.js');
+const OneEmojiClass = require('../OneEmojiClass.js');
+const ManageDatabaseJSON = require('../ManageDatabaseJSON.js');
 
-class ScriptEmojiGuildStore {
+class Command extends CommandBaseClass {
 
-    constructor(guildid, basedir) {
-        this.guildid = guildid;
-        this.basedir = basedir;
-        this.emojisarray = [];
+    constructor(object) {
+        super(object);
+        
     }
 
-    async init(client) {
-        this.client = client;
-        this.guild = client.guilds.get(this.guildid);
+    async init(...args) {
 
+    }
+
+    async execute() {
+        console.log("emojisupdate");
         // Загружаем конфигурацию для сервера.
         this.Settings = (new ManageDatabaseJSON(`${this.basedir}/config.json`)).load();
 
-        if (Util.isBlank(this.Settings.ChannelID)) throw new Error("Не задан текстовый канал для сервера " + this.guildid);
+        if (this.Util.isBlank(this.Settings.ChannelID)) throw new Error("Не задан текстовый канал для сервера " + this.guildid);
 
         // Загружаем все эмодзи для сервера.
         const activedirectory = path.resolve(`${this.basedir}/active`);
@@ -30,12 +31,14 @@ class ScriptEmojiGuildStore {
         for (const filename of files) {
             if (path.extname(filename) === ".json") {
                 // Создаём экземпляр класса эмодзи для каждого найденного .json файла.
-                const EmojiGuild = new ScriptOneEmojiGuildStore(this.guildid, path.resolve(activedirectory, filename), this.Settings.ChannelID);
+                const EmojiGuild = new OneEmojiClass(this.MainApp, path.resolve(activedirectory, filename), this.Settings.ChannelID);
                 this.emojisarray.push(EmojiGuild);
                 // Инициализируем.
-                await EmojiGuild.init(client);
+                await EmojiGuild.init(this.client);
             }
         }
+
+        if (this.emojisarray.length === 0) throw new Error("Отсутствует эмодзи для сервера " + this.guildid);
 
         // Сортируем эмодзи по их желаемой позиции.
         this.emojisarray = this.emojisarray.sort((a, b) => {
@@ -72,17 +75,17 @@ class ScriptEmojiGuildStore {
      * Проверка позиций эмодзи в текстовом канале на Дискорд сервере, очищение при необходимости.
      *
      * @returns массив с существующими номерами сообщений эмодзи в текстовом канале.
-     * @memberof ScriptEmojiGuildStore
+     * @memberof CommandBaseClass
      */
     async СheckPositionsOfMessages() {
         // Отчищаем канал от всех сообщений, которые отсутствуют в файлах эмодзи.
-        await Util.CleanUpTextChannel(this.client.channels.get(this.Settings.ChannelID), (Message) => {
+        await this.Util.CleanUpTextChannel(this.client.channels.get(this.Settings.ChannelID), (Message) => {
             return this.emojisarray.findIndex(EmojiContainer => EmojiContainer.Settings.MessageID == Message.id) === -1 ? false : true;
         });
 
         let ExistingMessages = [];
         let LastID = null;
-        let FirstEncounter = undefined;
+        let FirstEncounter;
         let NeedToWipe = false;
         // Цикл проверки позиции эмодзи в канале.
         while (true) {
@@ -105,6 +108,7 @@ class ScriptEmojiGuildStore {
                             NeedToWipe = true;
                             break;
                         }
+
                         ExistingMessages.push(Message.id);
                     }
                 }
@@ -114,9 +118,12 @@ class ScriptEmojiGuildStore {
             }
         }
 
+        // Если мы не дошли до нуля, и первое совпадение было найдено. 
+        if (!NeedToWipe && FirstEncounter !== 0 && FirstEncounter !== undefined) NeedToWipe = true;
+
         if (NeedToWipe === true) {
             // Отчищаем канал от всех сообщений, если нужно.
-            await Util.CleanUpTextChannel(this.client.channels.get(this.Settings.ChannelID), () => {
+            await this.Util.CleanUpTextChannel(this.client.channels.get(this.Settings.ChannelID), () => {
                 return false;
             });
             return [];
@@ -124,5 +131,5 @@ class ScriptEmojiGuildStore {
         return ExistingMessages;
     }
 
-};
-module.exports = ScriptEmojiGuildStore;
+}
+module.exports = Command;
