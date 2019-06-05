@@ -65,7 +65,11 @@ class ScriptEmojiGuildStore {
         }
 
         // Ассинхронно проверяем обновление для каждого эмодзи и ожидаем проверки всех.
-        await Promise.all(this.emojisarray.map(Emoji => ExistingMessages.includes(Emoji.Settings.MessageID)));
+        await Promise.all(this.emojisarray.map(Emoji => {
+            if (ExistingMessages.includes(Emoji.Settings.MessageID)) {
+                return Emoji.checkupdate();
+            }
+        }));
     }
 
     /**
